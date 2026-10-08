@@ -10,6 +10,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://gateplus:ci_only@127.0.0.1:5432/gateplus_ci?schema=public
       DIRECT_URL: postgresql://gateplus:ci_only@127.0.0.1:5432/gateplus_ci?schema=public
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,5 +19,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
       - run: npm run lint
       - run: npm run build

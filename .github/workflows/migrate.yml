@@ -1,6 +1,10 @@
 name: Migrate production database
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'prisma/**'
   workflow_dispatch:
 
 jobs:
@@ -17,4 +21,5 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
       - run: npm run db:migrate:deploy

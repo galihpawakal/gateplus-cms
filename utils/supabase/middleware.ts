@@ -21,28 +21,8 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-
-  // #region agent log
-  fetch('http://127.0.0.1:7785/ingest/ca84c8f6-a8f0-45f4-8e78-c48f4d949781', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '7e78b3' },
-    body: JSON.stringify({
-      sessionId: '7e78b3',
-      runId: 'pre-fix',
-      hypothesisId: 'H4',
-      location: 'utils/supabase/middleware.ts:updateSession',
-      message: 'Supabase auth.getUser result',
-      data: {
-        path: request.nextUrl.pathname,
-        hasUser: Boolean(userData?.user),
-        errorMessage: userError?.message ?? null,
-        errorStatus: userError?.status ?? null,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
+  // Refresh the user session so cookies stay valid
+  await supabase.auth.getUser();
 
   return response;
 }
