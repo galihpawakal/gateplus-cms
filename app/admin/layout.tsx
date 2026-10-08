@@ -3,18 +3,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Plus, LayoutDashboard, FileText, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 import { ToastProvider } from '@/components/ui/Toast';
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Content', href: '/admin', icon: FileText },
+  { name: 'Kelola Content', href: '/admin', icon: FileText },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
   return (
@@ -32,9 +31,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Sidebar */}
         <aside
+          id="admin-sidebar"
           className={cn(
             'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 lg:translate-x-0',
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            sidebarOpen ? 'translate-x-0 visible' : '-translate-x-full invisible lg:visible'
           )}
           aria-label="Sidebar"
         >
@@ -47,13 +47,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
                 <span className="font-semibold text-gray-900">Gateplus CMS</span>
               </Link>
-              <button
+              <IconButton
                 onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                 aria-label="Close sidebar"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
+                title="Close sidebar"
+                className="lg:hidden text-gray-400 hover:text-gray-600"
+                icon={<ChevronLeft className="h-5 w-5" aria-hidden="true" />}
+              />
             </div>
 
             {/* Navigation */}
@@ -94,23 +94,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Top bar */}
           <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
             <div className="flex items-center justify-between h-16 px-4 sm:px-6">
-              <button
+              <IconButton
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                 aria-label="Open sidebar"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+                title="Open sidebar"
+                aria-expanded={sidebarOpen}
+                aria-controls="admin-sidebar"
+                className="lg:hidden text-gray-400 hover:text-gray-600"
+                icon={<ChevronRight className="h-5 w-5" aria-hidden="true" />}
+              />
               <div className="flex-1 lg:flex-none">
                 <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link href="/admin/create">
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Tambah Content
-                  </Button>
-                </Link>
               </div>
             </div>
           </header>

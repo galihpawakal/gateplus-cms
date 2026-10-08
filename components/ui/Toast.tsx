@@ -3,6 +3,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { IconButton } from './IconButton';
 
 interface Toast {
   id: string;
@@ -93,13 +94,13 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
         <p className="font-medium">{toast.title}</p>
         {toast.description && <p className="text-sm opacity-90 mt-0.5">{toast.description}</p>}
       </div>
-      <button
+      <IconButton
         onClick={() => onDismiss(toast.id)}
-        className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
         aria-label="Dismiss"
-      >
-        <X className="w-4 h-4" />
-      </button>
+        title="Dismiss"
+        className="opacity-60 hover:opacity-100"
+        icon={<X className="h-4 w-4" aria-hidden="true" />}
+      />
     </div>
   );
 }

@@ -1,37 +1,46 @@
 'use client';
 
 import { forwardRef, ButtonHTMLAttributes } from 'react';
+import Link, { LinkProps } from 'next/link';
+import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonSize = 'sm' | 'md' | 'lg';
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
+}
+
+const baseStyles = 'inline-flex items-center justify-center rounded-control font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+
+const variants: Record<ButtonVariant, string> = {
+  primary: 'bg-primary-600 text-white hover:bg-primary-700',
+  secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
+  ghost: 'bg-transparent hover:bg-gray-100',
+  danger: 'bg-red-600 text-white hover:bg-red-700',
+};
+
+const sizes: Record<ButtonSize, string> = {
+  sm: 'h-8 px-3 text-sm',
+  md: 'h-10 px-4 py-2',
+  lg: 'h-12 px-8 text-lg',
+};
+
+export function buttonClassName(variant: ButtonVariant, size: ButtonSize, className?: string) {
+  return cn(baseStyles, variants[variant], sizes[size], className);
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, disabled, children, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none rounded-lg';
-    
-    const variants = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700',
-      secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
-      outline: 'border border-gray-300 bg-transparent hover:bg-gray-50',
-      ghost: 'bg-transparent hover:bg-gray-100',
-      destructive: 'bg-red-600 text-white hover:bg-red-700',
-    };
-    
-    const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 py-2',
-      lg: 'h-12 px-8 text-lg',
-    };
-
     return (
       <button
         ref={ref}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={buttonClassName(variant, size, className)}
         disabled={disabled || loading}
+        aria-busy={loading || undefined}
         {...props}
       >
         {loading && (
@@ -47,3 +56,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+interface ButtonLinkProps extends Omit<LinkProps, 'children'> {
+  children: ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+}
+
+export function ButtonLink({ variant = 'primary', size = 'md', className, children, ...props }: ButtonLinkProps) {
+  return <Link className={buttonClassName(variant, size, className)} {...props}>{children}</Link>;
+}

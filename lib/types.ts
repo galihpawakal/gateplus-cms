@@ -1,10 +1,12 @@
+import { ContentStatus } from './constants';
+
 export interface Content {
   id: string;
   title: string;
   description: string;
   genre: string;
   thumbnailUrl: string | undefined;
-  status: 'draft' | 'published';
+  status: ContentStatus;
   publishedAt: string | undefined;
   createdAt: string;
   updatedAt: string;
@@ -14,7 +16,7 @@ export interface ContentCreateInput {
   title: string;
   description: string;
   genre: string;
-  status: 'draft' | 'published';
+  status: ContentStatus;
   thumbnailUrl?: string;
   publishedAt?: string | null;
 }
@@ -23,7 +25,7 @@ export interface ContentUpdateInput {
   title?: string;
   description?: string;
   genre?: string;
-  status?: 'draft' | 'published';
+  status?: ContentStatus;
   thumbnailUrl?: string;
   publishedAt?: string | null;
 }

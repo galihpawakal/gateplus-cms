@@ -1,3 +1,6 @@
+import { clsx, ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
 export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return '-';
   const d = new Date(date);
@@ -25,18 +28,8 @@ export function truncate(text: string, maxLength: number): string {
   return text.slice(0, maxLength).trim() + '...';
 }
 
-export function getStatusBadgeClass(status: 'draft' | 'published'): string {
-  return status === 'published'
-    ? 'bg-green-100 text-green-800'
-    : 'bg-yellow-100 text-yellow-800';
-}
-
-export function getStatusLabel(status: 'draft' | 'published'): string {
-  return status === 'published' ? 'Published' : 'Draft';
-}
-
-export function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(' ');
+export function cn(...classes: ClassValue[]): string {
+  return twMerge(clsx(classes));
 }
 
 export function toISOString(date: Date | string | null | undefined): string | undefined {

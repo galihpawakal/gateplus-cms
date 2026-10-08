@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calendar, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { contentCreateSchema, contentUpdateSchema, ContentStatus } from '@/lib/validation';
+import { CONTENT_STATUS_OPTIONS, ContentStatus, DRAFT_STATUS, PUBLISHED_STATUS } from '@/lib/constants';
+import { contentCreateSchema, contentUpdateSchema } from '@/lib/validation';
 
-type FormData = {
+export type ContentFormValues = {
   title: string;
   description: string;
   genre: string;
@@ -20,31 +21,19 @@ type FormData = {
 };
 
 interface ContentFormProps {
-  initialData?: Partial<FormData>;
-  onSubmit: (data: FormData) => Promise<void>;
+  initialData?: Partial<ContentFormValues>;
+  genres: string[];
+  serverErrors?: Record<string, string>;
+  onSubmit: (data: ContentFormValues) => Promise<void>;
   onCancel: () => void;
   isEditing?: boolean;
   loading?: boolean;
 }
 
-const GENRES = [
-  'Bisnis',
-  'Keuangan',
-  'Kuliner',
-  'Lifestyle',
-  'Teknologi',
-  'Travel',
-  'Hobi',
-  'Kesehatan',
-];
-
-const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'published', label: 'Published' },
-];
-
 export function ContentForm({ 
   initialData, 
+  genres,
+  serverErrors = {},
   onSubmit, 
   onCancel, 
   isEditing = false, 
@@ -58,13 +47,13 @@ export function ContentForm({
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
+  } = useForm<ContentFormValues>({
     resolver: zodResolver(schema) as any,
     defaultValues: {
       title: '',
       description: '',
       genre: '',
-      status: 'draft' as ContentStatus,
+      status: DRAFT_STATUS,
       thumbnailUrl: undefined,
       publishedAt: undefined,
       ...initialData,
@@ -73,11 +62,11 @@ export function ContentForm({
   });
 
   const status = watch('status');
-  const showPublishedAt = status === 'published';
+  const showPublishedAt = status === PUBLISHED_STATUS;
 
   // Set publishedAt to now when status changes to published
   useEffect(() => {
-    if (status === 'published' && !watch('publishedAt')) {
+    if (status === PUBLISHED_STATUS && !watch('publishedAt')) {
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
       setValue('publishedAt', now.toISOString().slice(0, 16));
@@ -98,44 +87,41 @@ export function ContentForm({
           <Input
             label="Judul *"
             placeholder="Masukkan judul content"
-            error={errors.title?.message}
+            error={serverErrors.title || errors.title?.message}
             {...register('title')}
             maxLength={200}
           />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Deskripsi *
-            </label>
+          <FormField
+            id="content-description"
+            label="Deskripsi *"
+            error={serverErrors.description || errors.description?.message}
+          >
             <textarea
+              id="content-description"
               {...register('description')}
               rows={6}
-              className={`
-                w-full px-3 py-2 border rounded-lg shadow-sm placeholder:text-gray-400
-                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
-                ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
-              `}
+              className="min-h-36 w-full rounded-control border border-ui-border px-3 py-2 text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1"
+              aria-invalid={Boolean(serverErrors.description || errors.description)}
+              aria-describedby={serverErrors.description || errors.description ? 'content-description-error' : undefined}
               placeholder="Masukkan deskripsi content"
             />
-            {errors.description && (
-              <p className="mt-1 text-sm text-red-600" role="alert">{errors.description.message}</p>
-            )}
-          </div>
+          </FormField>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Select
               label="Genre *"
               placeholder="Pilih genre"
-              options={[{ value: '', label: 'Pilih genre' }, ...GENRES.map(g => ({ value: g, label: g }))]}
-              error={errors.genre?.message}
+              options={genres.map((genre) => ({ value: genre, label: genre }))}
+              error={serverErrors.genre || errors.genre?.message}
               {...register('genre')}
             />
 
             <Select
               label="Status *"
               placeholder="Pilih status"
-              options={STATUS_OPTIONS}
-              error={errors.status?.message}
+              options={CONTENT_STATUS_OPTIONS}
+              error={serverErrors.status || errors.status?.message}
               {...register('status')}
             />
           </div>
@@ -144,40 +130,36 @@ export function ContentForm({
             label="Thumbnail URL"
             placeholder="https://example.com/image.jpg"
             type="url"
-            error={errors.thumbnailUrl?.message}
+            error={serverErrors.thumbnailUrl || errors.thumbnailUrl?.message}
             {...register('thumbnailUrl')}
           />
 
           {showPublishedAt && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                Tanggal Publish *
-                <Calendar className="w-4 h-4 text-gray-400" />
-              </label>
+            <FormField
+              id="published-at"
+              label="Tanggal Publish *"
+              error={serverErrors.publishedAt || errors.publishedAt?.message}
+              hint="Wajib diisi jika status Published"
+            >
               <input
+                id="published-at"
                 type="datetime-local"
                 {...register('publishedAt')}
-                className={`
-                  w-full px-3 py-2 border rounded-lg shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
-                  ${errors.publishedAt ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}
-                `}
+                className="h-10 w-full rounded-control border border-ui-border px-3 text-gray-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1"
+                aria-invalid={Boolean(serverErrors.publishedAt || errors.publishedAt)}
+                aria-describedby={serverErrors.publishedAt || errors.publishedAt ? 'published-at-error' : 'published-at-hint'}
               />
-              {errors.publishedAt && (
-                <p className="mt-1 text-sm text-red-600" role="alert">{errors.publishedAt.message}</p>
-              )}
-              <p className="mt-1 text-xs text-gray-500">Wajib diisi jika status Published</p>
-            </div>
+            </FormField>
           )}
         </CardContent>
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting || loading}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting || loading}>
           Batal
         </Button>
         <Button type="submit" loading={isSubmitting || loading}>
-          {isEditing ? 'Simpan Perubahan' : 'Buat Content'}
+          Simpan
         </Button>
       </div>
     </form>

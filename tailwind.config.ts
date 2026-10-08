@@ -8,6 +8,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        ui: {
+          border: '#d1d5db',
+        },
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -20,6 +23,9 @@ const config: Config = {
           800: '#075985',
           900: '#0c4a6e',
         },
+      },
+      borderRadius: {
+        control: '0.5rem',
       },
     },
   },

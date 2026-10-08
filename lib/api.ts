@@ -62,6 +62,9 @@ export function handleApiError(error: unknown): NextResponse<ApiResponse<null>> 
   }
   
   if (error instanceof Error) {
+    if (error instanceof SyntaxError) {
+      return errorResponse('INVALID_JSON', 'Body JSON tidak valid', 400);
+    }
     if (error.message.includes('P2003')) {
       return errorResponse('FOREIGN_KEY_CONSTRAINT', 'Data terkait tidak ditemukan', 400);
     }

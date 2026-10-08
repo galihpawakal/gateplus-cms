@@ -1,9 +1,9 @@
 'use client';
 
-import { Fragment, ReactNode } from 'react';
+import { Fragment, ReactNode, useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from './Button';
+import { IconButton } from './IconButton';
 
 interface DialogProps {
   open: boolean;
@@ -14,6 +14,50 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onOpenChange, children, title, description }: DialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const getFocusableElements = () => Array.from(dialog?.querySelectorAll<HTMLElement>(
+      'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+    ) || []);
+    getFocusableElements()[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onOpenChange(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [open, onOpenChange]);
+
   if (!open) return null;
 
   return (
@@ -25,34 +69,36 @@ export function Dialog({ open, onOpenChange, children, title, description }: Dia
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
+          ref={dialogRef}
           className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden animate-slide-up"
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
-          aria-labelledby={title ? 'dialog-title' : undefined}
-          aria-describedby={description ? 'dialog-description' : undefined}
+          aria-labelledby={title ? titleId : undefined}
+          aria-describedby={description ? descriptionId : undefined}
+          tabIndex={-1}
         >
           {(title || description) && (
             <div className="flex items-start justify-between p-6 border-b border-gray-200">
               <div>
                 {title && (
-                  <h2 id="dialog-title" className="text-lg font-semibold text-gray-900">
+                  <h2 id={titleId} className="text-lg font-semibold text-gray-900">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p id="dialog-description" className="text-sm text-gray-500 mt-1">
+                  <p id={descriptionId} className="text-sm text-gray-500 mt-1">
                     {description}
                   </p>
                 )}
               </div>
-              <button
+              <IconButton
                 onClick={() => onOpenChange(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Tutup dialog"
+                title="Tutup dialog"
+                icon={<X className="h-5 w-5" aria-hidden="true" />}
+              />
             </div>
           )}
           <div className="p-6">{children}</div>
@@ -70,7 +116,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'destructive' | 'primary';
+  variant?: 'danger' | 'primary';
   loading?: boolean;
 }
 
@@ -82,13 +128,13 @@ export function ConfirmDialog({
   onConfirm,
   confirmText = 'Konfirmasi',
   cancelText = 'Batal',
-  variant = 'destructive',
+  variant = 'danger',
   loading = false,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange} title={title} description={description}>
       <div className="flex justify-end gap-3 pt-4">
-        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+        <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={loading}>
           {cancelText}
         </Button>
         <Button variant={variant} onClick={onConfirm} loading={loading}>

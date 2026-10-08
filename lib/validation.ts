@@ -1,6 +1,14 @@
 import { z } from 'zod';
+import { CONTENT_STATUSES, PUBLISHED_STATUS } from './constants';
 
-export const contentStatusEnum = z.enum(['draft', 'published']);
+export const contentStatusEnum = z.enum(CONTENT_STATUSES);
+
+const publishedAtSchema = z
+  .string()
+  .datetime({ offset: true, local: true })
+  .transform((value) => new Date(value).toISOString())
+  .optional()
+  .nullable();
 
 export const contentBaseSchema = z.object({
   title: z.string().min(1, 'Judul wajib diisi').max(200, 'Judul maksimal 200 karakter'),
@@ -8,11 +16,11 @@ export const contentBaseSchema = z.object({
   genre: z.string().min(1, 'Genre wajib diisi').max(100, 'Genre maksimal 100 karakter'),
   status: contentStatusEnum,
   thumbnailUrl: z.string().url('URL thumbnail tidak valid').optional().or(z.literal('')),
-  publishedAt: z.string().datetime('Format tanggal tidak valid').optional().nullable(),
+  publishedAt: publishedAtSchema,
 });
 
 export const contentCreateSchema = contentBaseSchema.refine(
-  (data) => data.status !== 'published' || (data.publishedAt && data.publishedAt.length > 0),
+  (data) => data.status !== PUBLISHED_STATUS || (data.publishedAt && data.publishedAt.length > 0),
   {
     message: 'Tanggal publish wajib diisi jika status Published',
     path: ['publishedAt'],
@@ -21,7 +29,7 @@ export const contentCreateSchema = contentBaseSchema.refine(
 
 export const contentUpdateSchema = contentBaseSchema.partial().refine(
   (data) => {
-    if (data.status === 'published' && (!data.publishedAt || data.publishedAt.length === 0)) {
+    if (data.status === PUBLISHED_STATUS && (!data.publishedAt || data.publishedAt.length === 0)) {
       return false;
     }
     return true;

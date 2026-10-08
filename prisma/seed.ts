@@ -9,7 +9,7 @@ const seedData = [
     genre: 'Bisnis',
     thumbnailUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-01-15T09:00:00Z'),
+    publishedAt: new Date('2026-01-15T09:00:00Z'),
   },
   {
     title: 'Panduan Investasi Saham Pemula',
@@ -17,7 +17,7 @@ const seedData = [
     genre: 'Keuangan',
     thumbnailUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-02-20T10:30:00Z'),
+    publishedAt: new Date('2026-02-20T10:30:00Z'),
   },
   {
     title: 'Resep Masakan Nusantara Lengkap',
@@ -25,15 +25,15 @@ const seedData = [
     genre: 'Kuliner',
     thumbnailUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-03-10T08:15:00Z'),
+    publishedAt: new Date('2026-03-10T08:15:00Z'),
   },
   {
     title: 'Tips Produktivitas Kerja Remote',
     description: 'Strategi efektif bekerja dari rumah: manajemen waktu, setup workspace ergonomis, teknik Pomodoro, komunikasi tim virtual, dan menjaga work-life balance.',
     genre: 'Lifestyle',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1521791136064-7986c292241b?w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-04-05T14:00:00Z'),
+    publishedAt: new Date('2026-04-05T14:00:00Z'),
   },
   {
     title: 'Belajar React untuk Pemula',
@@ -44,12 +44,12 @@ const seedData = [
     publishedAt: null,
   },
   {
-    title: 'Strategi Marketing Digital 2024',
+    title: 'Strategi Marketing Digital 2026',
     description: 'Tren marketing digital terbaru: SEO, content marketing, social media ads, email marketing, influencer marketing, dan pengukuran ROI dengan Google Analytics 4.',
     genre: 'Bisnis',
     thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-05-12T11:00:00Z'),
+    publishedAt: new Date('2026-05-12T11:00:00Z'),
   },
   {
     title: 'Manajemen Keuangan Pribadi',
@@ -65,7 +65,7 @@ const seedData = [
     genre: 'Travel',
     thumbnailUrl: 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-06-18T07:30:00Z'),
+    publishedAt: new Date('2026-06-18T07:30:00Z'),
   },
   {
     title: 'Dasar-Dasar Fotografi Mobile',
@@ -81,12 +81,31 @@ const seedData = [
     genre: 'Kesehatan',
     thumbnailUrl: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800',
     status: Status.published,
-    publishedAt: new Date('2024-07-22T16:45:00Z'),
+    publishedAt: new Date('2026-07-22T16:45:00Z'),
   },
 ];
 
 async function main() {
   console.log('🌱 Starting database seed...');
+
+  await prisma.content.deleteMany({
+    where: { title: 'Final Test Content', genre: 'Test' },
+  });
+
+  const oldMarketingContent = await prisma.content.findFirst({
+    where: { title: 'Strategi Marketing Digital 2024' },
+  });
+  const currentMarketingContent = await prisma.content.findFirst({
+    where: { title: 'Strategi Marketing Digital 2026' },
+  });
+  if (oldMarketingContent && currentMarketingContent) {
+    await prisma.content.delete({ where: { id: oldMarketingContent.id } });
+  } else if (oldMarketingContent) {
+    await prisma.content.update({
+      where: { id: oldMarketingContent.id },
+      data: { title: 'Strategi Marketing Digital 2026' },
+    });
+  }
 
   for (const content of seedData) {
     const existing = await prisma.content.findFirst({
@@ -94,7 +113,8 @@ async function main() {
     });
 
     if (existing) {
-      console.log(`⏭️  Skipping "${content.title}" (already exists)`);
+      await prisma.content.update({ where: { id: existing.id }, data: content });
+      console.log(`🔄 Updated: "${content.title}" [${content.status}]`);
       continue;
     }
 

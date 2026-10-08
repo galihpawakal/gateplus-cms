@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { formatDateTime } from '@/lib/utils';
+import { PUBLISHED_STATUS } from '@/lib/constants';
 import ContentDetailClient from './ContentDetailClient';
 
 interface Props {
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { title: true, description: true, thumbnailUrl: true, publishedAt: true, status: true },
   });
 
-  if (!content || content.status !== 'published') {
+  if (!content || content.status !== PUBLISHED_STATUS) {
     return { title: 'Content Tidak Ditemukan' };
   }
 
@@ -38,7 +39,7 @@ export default async function ContentDetailPage({ params }: Props) {
     where: { id },
   });
 
-  if (!content || content.status !== 'published') {
+  if (!content || content.status !== PUBLISHED_STATUS) {
     notFound();
   }
 

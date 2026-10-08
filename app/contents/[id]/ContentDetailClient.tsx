@@ -1,12 +1,14 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Tag, Clock, Share2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { ArrowLeft, Calendar, Clock, Share2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { formatDateTime, getStatusLabel, toISOString } from '@/lib/utils';
+import { ContentStatus } from '@/lib/constants';
+import { IconButton } from '@/components/ui/IconButton';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Thumbnail } from '@/components/ui/Thumbnail';
+import { formatDateTime, toISOString } from '@/lib/utils';
 
 interface ContentDetailClientProps {
   content: {
@@ -15,7 +17,7 @@ interface ContentDetailClientProps {
     description: string;
     genre: string;
     thumbnailUrl: string | undefined;
-    status: 'draft' | 'published';
+    status: ContentStatus;
     publishedAt: Date | string | undefined;
     createdAt: Date | string;
     updatedAt: Date | string;
@@ -23,7 +25,7 @@ interface ContentDetailClientProps {
 }
 
 export default function ContentDetailClient({ content }: ContentDetailClientProps) {
-  const { title, description, genre, thumbnailUrl, status, publishedAt, createdAt, updatedAt } = content;
+  const { title, description, genre, thumbnailUrl, status, publishedAt, updatedAt } = content;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -54,28 +56,13 @@ export default function ContentDetailClient({ content }: ContentDetailClientProp
         Kembali ke Daftar
       </Link>
 
-      {thumbnailUrl && (
-        <div className="relative aspect-video rounded-xl overflow-hidden mb-6 bg-gray-100">
-          <Image
-            src={thumbnailUrl}
-            alt={title}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-        </div>
-      )}
+      <Thumbnail src={thumbnailUrl} alt={title} className="mb-6" sizes="100vw" priority />
 
-      <header className="mb-6">
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge variant="secondary">{genre}</Badge>
-          <Badge variant={status === 'published' ? 'success' : 'warning'}>
-            {getStatusLabel(status)}
-          </Badge>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">{title}</h1>
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+      <PageHeader
+        title={title}
+        eyebrow={<div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{genre}</Badge><StatusBadge status={status} /></div>}
+        description={(
+          <div className="flex flex-wrap items-center gap-4 pt-2 text-sm text-gray-500">
           {publishedAt && (
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
@@ -86,8 +73,9 @@ export default function ContentDetailClient({ content }: ContentDetailClientProp
             <Clock className="w-4 h-4" />
             <time dateTime={toISOString(updatedAt)}>{formatDateTime(updatedAt)} (diperbarui)</time>
           </span>
-        </div>
-      </header>
+          </div>
+        )}
+      />
 
       <div className="prose prose-lg max-w-none text-gray-700">
         <div className="whitespace-pre-wrap">{description}</div>
@@ -97,9 +85,12 @@ export default function ContentDetailClient({ content }: ContentDetailClientProp
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Bagikan:</span>
-            <Button variant="ghost" size="sm" onClick={handleShare}>
-              <Share2 className="w-4 h-4" />
-            </Button>
+            <IconButton
+              aria-label="Bagikan content"
+              title="Bagikan content"
+              onClick={handleShare}
+              icon={<Share2 className="h-4 w-4" aria-hidden="true" />}
+            />
           </div>
         </div>
       </footer>
