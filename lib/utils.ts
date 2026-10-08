@@ -38,3 +38,8 @@ export function getStatusLabel(status: 'draft' | 'published'): string {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+export function toISOString(date: Date | string | null | undefined): string | undefined {
+  if (!date) return undefined;
+  return new Date(date).toISOString();
+}

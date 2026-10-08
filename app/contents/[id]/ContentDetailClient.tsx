@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, Tag, Clock, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { formatDateTime, getStatusLabel } from '@/lib/utils';
+import { formatDateTime, getStatusLabel, toISOString } from '@/lib/utils';
 
 interface ContentDetailClientProps {
   content: {
@@ -14,11 +14,11 @@ interface ContentDetailClientProps {
     title: string;
     description: string;
     genre: string;
-    thumbnailUrl: string | null;
+    thumbnailUrl: string | undefined;
     status: 'draft' | 'published';
-    publishedAt: string | null;
-    createdAt: string;
-    updatedAt: string;
+    publishedAt: Date | string | undefined;
+    createdAt: Date | string;
+    updatedAt: Date | string;
   };
 }
 
@@ -79,12 +79,12 @@ export default function ContentDetailClient({ content }: ContentDetailClientProp
           {publishedAt && (
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
-              <time dateTime={publishedAt}>{formatDateTime(publishedAt)}</time>
+              <time dateTime={toISOString(publishedAt)}>{formatDateTime(publishedAt)}</time>
             </span>
           )}
           <span className="flex items-center gap-1">
             <Clock className="w-4 h-4" />
-            <time dateTime={updatedAt}>{formatDateTime(updatedAt)} (diperbarui)</time>
+            <time dateTime={toISOString(updatedAt)}>{formatDateTime(updatedAt)} (diperbarui)</time>
           </span>
         </div>
       </header>

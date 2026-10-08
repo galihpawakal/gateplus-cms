@@ -8,11 +8,20 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { contentCreateSchema, contentUpdateSchema, ContentCreateInput, ContentUpdateInput, ContentStatus } from '@/lib/validation';
+import { contentCreateSchema, contentUpdateSchema, ContentStatus } from '@/lib/validation';
+
+type FormData = {
+  title: string;
+  description: string;
+  genre: string;
+  status: ContentStatus;
+  thumbnailUrl: string | undefined;
+  publishedAt: string | undefined;
+};
 
 interface ContentFormProps {
-  initialData?: ContentCreateInput;
-  onSubmit: (data: ContentCreateInput | ContentUpdateInput) => Promise<void>;
+  initialData?: Partial<FormData>;
+  onSubmit: (data: FormData) => Promise<void>;
   onCancel: () => void;
   isEditing?: boolean;
   loading?: boolean;
@@ -42,7 +51,6 @@ export function ContentForm({
   loading = false 
 }: ContentFormProps) {
   const schema = isEditing ? contentUpdateSchema : contentCreateSchema;
-  type FormData = ContentCreateInput | ContentUpdateInput;
 
   const {
     register,
@@ -51,14 +59,14 @@ export function ContentForm({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       title: '',
       description: '',
       genre: '',
       status: 'draft' as ContentStatus,
-      thumbnailUrl: '',
-      publishedAt: '',
+      thumbnailUrl: undefined,
+      publishedAt: undefined,
       ...initialData,
     },
     mode: 'onChange',

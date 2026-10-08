@@ -8,29 +8,7 @@ import { Select } from '@/components/ui/Select';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ContentCard } from '@/components/ContentCard';
 import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
-
-interface Content {
-  id: string;
-  title: string;
-  description: string;
-  genre: string;
-  thumbnailUrl: string | null;
-  status: 'draft' | 'published';
-  publishedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ApiResponse {
-  success: boolean;
-  data: Content[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import { Content } from '@/lib/types';
 
 const GENRES = [
   'Bisnis',
@@ -77,7 +55,12 @@ export default function ContentsPage() {
       params.set('status', 'published');
 
       const res = await fetch(`/api/contents?${params.toString()}`);
-      const json: ApiResponse = await res.json();
+      const json = await res.json() as {
+        success: boolean;
+        data: Content[];
+        meta: { page: number; limit: number; total: number; totalPages: number };
+        error?: { code: string; message: string; details?: Record<string, string[]> | string[] };
+      };
 
       if (!json.success) {
         throw new Error(json.error?.message || 'Gagal memuat content');

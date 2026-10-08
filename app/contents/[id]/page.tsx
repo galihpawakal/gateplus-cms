@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const content = await prisma.content.findUnique({
     where: { id },
-    select: { title: true, description: true, thumbnailUrl: true, publishedAt: true },
+    select: { title: true, description: true, thumbnailUrl: true, publishedAt: true, status: true },
   });
 
   if (!content || content.status !== 'published') {
@@ -42,5 +42,12 @@ export default async function ContentDetailPage({ params }: Props) {
     notFound();
   }
 
-  return <ContentDetailClient content={content} />;
+  // Convert null to undefined for client component
+  const clientContent = {
+    ...content,
+    thumbnailUrl: content.thumbnailUrl ?? undefined,
+    publishedAt: content.publishedAt ?? undefined,
+  };
+
+  return <ContentDetailClient content={clientContent} />;
 }

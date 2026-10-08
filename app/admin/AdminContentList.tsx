@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, Funnel, Loader2, RefreshCw, Plus, X } from 'lucide-react';
+import { Search, Filter, Loader2, RefreshCw, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -10,7 +10,7 @@ import { ContentTable } from '@/components/ContentTable';
 import { ContentForm } from '@/components/ContentForm';
 import { Dialog, ConfirmDialog } from '@/components/ui/Dialog';
 import { useToast } from '@/components/ui/Toast';
-import { Content, ContentCreateInput, ContentUpdateInput } from '@/app/contents/page';
+import { Content } from '@/lib/types';
 import { ContentStatus } from '@/lib/validation';
 
 const GENRES = [
@@ -96,12 +96,18 @@ function AdminContentListContent() {
     fetchContents();
   }, [fetchContents]);
 
-  const handleCreateSubmit = async (data: ContentCreateInput) => {
+  const handleCreateSubmit = async (data: Record<string, unknown>) => {
+    // Convert undefined to null for API
+    const apiData = {
+      ...data,
+      thumbnailUrl: data.thumbnailUrl ?? null,
+      publishedAt: data.publishedAt ?? null,
+    };
     try {
       const res = await fetch('/api/contents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(apiData),
       });
       const json = await res.json();
 
@@ -118,13 +124,19 @@ function AdminContentListContent() {
     }
   };
 
-  const handleEditSubmit = async (data: ContentUpdateInput) => {
+  const handleEditSubmit = async (data: Record<string, unknown>) => {
     if (!editingContent) return;
+    // Convert undefined to null for API
+    const apiData = {
+      ...data,
+      thumbnailUrl: data.thumbnailUrl ?? null,
+      publishedAt: data.publishedAt ?? null,
+    };
     try {
       const res = await fetch(`/api/contents/${editingContent.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(apiData),
       });
       const json = await res.json();
 

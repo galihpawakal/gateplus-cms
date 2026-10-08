@@ -12,9 +12,9 @@ interface ContentCardProps {
   title: string;
   description: string;
   genre: string;
-  thumbnailUrl: string | null;
+  thumbnailUrl: string | undefined;
   status: 'draft' | 'published';
-  publishedAt: string | null;
+  publishedAt: string | undefined;
   isSkeleton?: boolean;
 }
 

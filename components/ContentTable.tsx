@@ -1,10 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import { formatDate, getStatusBadgeClass, getStatusLabel, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { MoreHorizontal, Trash2, Edit, Eye } from 'lucide-react';
-import { Content } from '@/app/contents/page';
+import { Content } from '@/lib/types';
 
 interface ContentTableProps {
   contents: Content[];
@@ -78,10 +79,12 @@ export function ContentTable({ contents, onEdit, onDelete, onView, loading }: Co
             <tr key={content.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-4 py-3">
                 {content.thumbnailUrl ? (
-                  <img 
-                    src={content.thumbnailUrl} 
-                    alt={content.title} 
-                    className="w-16 h-10 object-cover rounded"
+                  <Image
+                    src={content.thumbnailUrl}
+                    alt={content.title}
+                    width={64}
+                    height={40}
+                    className="object-cover rounded"
                   />
                 ) : (
                   <div className="w-16 h-10 bg-gray-100 rounded flex items-center justify-center">
