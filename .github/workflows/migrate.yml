@@ -2,7 +2,7 @@ name: Migrate production database
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - 'prisma/**'
   workflow_dispatch:
