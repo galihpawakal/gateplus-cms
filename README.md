@@ -35,7 +35,7 @@ Docker dipakai hanya untuk reproduksi database lokal. Production memakai Supabas
    Copy-Item .env.example .env
    ```
 
-2. Atur `.env` sesuai PostgreSQL yang digunakan. Jangan commit file `.env` atau menyimpan kredensial production di repository.
+2. Atur `.env` sesuai PostgreSQL yang digunakan. Jangan commit file `.env` atau menyimpan kredensial production di repository. Untuk Supabase Auth lokal, isi `.env.local` dengan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; keduanya bukan PostgreSQL connection string dan tidak membuat tabel.
 
 3. Instal dependency:
 
@@ -76,9 +76,22 @@ Buka [http://localhost:3000](http://localhost:3000). URL root akan mengarahkan k
 | `DB_PORT` | Port host Compose, local dev only | `5432` |
 | `DATABASE_URL` | URL koneksi aplikasi Prisma | `postgresql://gateplus:password@localhost:5432/gateplus_cms?schema=public` |
 | `DIRECT_URL` | URL koneksi langsung untuk migrasi Prisma | Sama dengan `DATABASE_URL` secara lokal |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL project untuk Auth SSR/client | `https://your-project.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key untuk Auth SSR/client | Isi dari Supabase Project API Keys |
 | `NEXT_PUBLIC_APP_URL` | URL aplikasi | `http://localhost:3000` |
 
 Untuk Docker lokal, port pada URL harus sama dengan `DB_PORT`. Compose menyimpan data dalam named volume `pgdata`. Untuk Supabase, `DATABASE_URL` dapat memakai connection pooler dan `DIRECT_URL` memakai koneksi langsung. Nilai production hanya disimpan di GitHub Secrets dan Vercel Environment Variables, bukan di file repository.
+
+### Membuat tabel CMS di Supabase
+
+Supabase URL dan publishable key hanya mengaktifkan Auth client; keduanya tidak membuat tabel. Model CMS berada di `prisma/schema.prisma`, dengan migration awal di `prisma/migrations/`. Atur `DIRECT_URL` ke PostgreSQL connection string Supabase yang valid (dan `DATABASE_URL` ke pooler atau URL database), lalu jalankan:
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
+```
+
+Atau isi GitHub Environment secrets `SUPABASE_DATABASE_URL` dan `SUPABASE_DIRECT_URL`, lalu jalankan workflow **Migrate production database** secara manual. Pastikan migration sukses sebelum menguji `POST /api/contents`. Jangan taruh database password pada variabel `NEXT_PUBLIC_*`.
 
 ## Perintah yang tersedia
 
@@ -135,6 +148,8 @@ Production memakai Vercel untuk aplikasi dan Supabase untuk PostgreSQL. Deployme
 Workflow CI di `.github/workflows/ci.yml` menjalankan `npm ci`, lint, dan build tanpa Docker Compose maupun database service. Workflow `.github/workflows/migrate.yml` dijalankan manual dari GitHub Actions; siapkan GitHub Environment `production` dengan secrets `SUPABASE_DATABASE_URL` dan `SUPABASE_DIRECT_URL`. Workflow menjalankan `prisma migrate deploy` lewat `npm run db:migrate:deploy`.
 
 Atur `DATABASE_URL` dan `DIRECT_URL` production di Vercel Environment Variables. Gunakan URL pooler Supabase untuk `DATABASE_URL` dan URL koneksi langsung untuk `DIRECT_URL`. Jangan buat atau commit file env production.
+
+Atur juga `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` di Vercel untuk Supabase Auth client/session middleware. Middleware memperbarui session; tabel konten tetap diakses Prisma melalui PostgreSQL.
 
 ## REST API
 
